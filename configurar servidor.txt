@@ -1,0 +1,206 @@
+Paso 1: Preparar el Entorno del Servidor
+Conéctate al servidor:
+
+bash
+
+Copiar
+ssh usuario@direccion_ip_del_servidor
+Instala las dependencias necesarias:
+
+Actualiza el sistema:
+
+bash
+
+Copiar
+sudo apt update && sudo apt upgrade
+Instala Python y otros paquetes necesarios:
+
+
+sudo apt install python3 python3-venv python3-pip nginx
+Paso 2: Configurar el Entorno Virtual
+Crea un entorno virtual:
+
+
+python3 -m venv venv
+Activa el entorno virtual:
+
+
+source venv/bin/activate
+Instala las dependencias del proyecto:
+
+Sube tu archivo requirements.txt al servidor y ejecuta:
+
+
+
+
+pip install -r requirements.txt
+Paso 3: Configurar PostgreSQL (si usas PostgreSQL)
+Instala PostgreSQL:
+
+sudo apt install postgresql postgresql-contrib
+Configura la base de datos:
+
+sudo -u postgres psql
+CREATE DATABASE nombre_de_tu_base_de_datos;
+CREATE USER nombre_usuario WITH PASSWORD 'tu_contraseña';
+ALTER ROLE nombre_usuario SET client_encoding TO 'utf8';
+ALTER ROLE nombre_usuario SET default_transaction_isolation TO 'read committed';
+ALTER ROLE nombre_usuario SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE nombre_de_tu_base_de_datos TO nombre_usuario;
+
+Paso 4: Configurar el Proyecto Django
+Configura los ajustes del proyecto (settings.py):
+
+Configura la base de datos.
+
+Asegúrate de que ALLOWED_HOSTS incluye la dirección IP o el dominio de tu servidor.
+
+Realiza las migraciones:
+
+
+python manage.py makemigrations
+python manage.py migrate
+Recoge archivos estáticos:
+
+python manage.py collectstatic
+Paso 5: Configurar Gunicorn y Nginx
+Instala Gunicorn:
+
+
+pip install gunicorn
+Configura Gunicorn:
+
+Crea un archivo gunicorn.service en /etc/systemd/system/:
+
+sudo nano /etc/systemd/system/gunicorn.service
+Añade la siguiente configuración:
+
+ini
+
+Copiar
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=usuario
+Group=www-data
+WorkingDirectory=/ruta/a/tu/proyecto
+ExecStart=/ruta/a/tu/proyecto/venv/bin/gunicorn --workers 3 --bind unix:/ruta/a/tu/proyecto/gunicorn.sock nombre_de_tu_proyecto.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+Inicia y habilita Gunicorn:
+
+bash
+
+Copiar
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+Configura Nginx:
+
+Crea un archivo de configuración de sitio para Nginx:
+
+bash
+
+Copiar
+sudo nano /etc/nginx/sites-available/tu_proyecto
+Añade la siguiente configuración:
+
+nginx
+
+Copiar
+server {
+    listen 80;
+    server_name tu_dominio o_direccion_ip;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /ruta/a/tu/proyecto;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/ruta/a/tu/proyecto/gunicorn.sock;
+    }
+}
+Habilita la configuración del sitio y reinicia Nginx:
+
+bash
+
+Copiar
+sudo ln -s /etc/nginx/sites-available/tu_proyecto /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl restart nginx
+Paso 6: Configurar el Dominio (opcional)
+Si tienes un dominio, configura los registros DNS para apuntar a la dirección IP de tu servidor.
+
+Con estos pasos, deberías tener tu proyecto Django funcionando en el servidor de tu empresa. ¿Hay algo específico en lo que te gustaría profundizar?
+
+
+
+
+Usted
+como clono de git mi proyecto al espacio del servidor
+Copilot
+Para clonar tu proyecto de Git al espacio del servidor, sigue estos pasos:
+
+Paso 1: Conéctate al Servidor
+Conéctate a tu servidor utilizando SSH:
+
+bash
+
+Copiar
+ssh usuario@direccion_ip_del_servidor
+Paso 2: Navega al Directorio de Trabajo
+Navega al directorio donde deseas clonar tu proyecto:
+
+bash
+
+Copiar
+cd /ruta/al/directorio/de/trabajo
+Paso 3: Clona el Repositorio de Git
+Usa el comando git clone para clonar tu repositorio. Necesitarás la URL del repositorio:
+
+bash
+
+Copiar
+git clone https://github.com/tu_usuario/tu_repositorio.git
+Reemplaza https://github.com/tu_usuario/tu_repositorio.git con la URL de tu repositorio.
+
+Paso 4: Navega al Directorio del Proyecto
+Cambia al directorio del proyecto clonado:
+
+bash
+
+Copiar
+cd tu_repositorio
+Paso 5: Configura el Entorno del Proyecto
+Crea y activa un entorno virtual:
+
+bash
+
+Copiar
+python3 -m venv venv
+source venv/bin/activate
+Instala las dependencias del proyecto:
+
+bash
+
+Copiar
+pip install -r requirements.txt
+Paso 6: Configura la Base de Datos
+Si tu proyecto usa una base de datos, asegúrate de configurar la conexión y aplicar las migraciones:
+
+bash
+
+Copiar
+python manage.py makemigrations
+python manage.py migrate
+Paso 7: Inicia el Servidor
+Por último, inicia el servidor para comprobar que todo funciona correctamente:
+
+bash
+
+Copiar
+python manage.py runserver
