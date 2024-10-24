@@ -1,0 +1,35 @@
+Paso 2: Crear las Migraciones
+Ejecuta el siguiente comando para crear migraciones basadas en los cambios de tus modelos:
+
+bash
+
+Copiar
+python manage.py makemigrations
+
+Paso 3: Aplicar las Migraciones
+Aplica las migraciones a la base de datos ejecutando:
+
+bash
+
+Copiar
+python manage.py migrate
+
+Reinstalación del Entorno Virtual (si es necesario)
+Si el problema persiste, considera eliminar y volver a crear el entorno virtual:
+
+Eliminar el entorno virtual actual (asegúrate de estar fuera del entorno):
+
+rm -r venv  # Usar 'del /S venv' en Windows CMD
+Crear un nuevo entorno virtual:
+python -m venv venv
+Activar el nuevo entorno virtual:
+.\venv\Scripts\activate
+source venv/bin/activate
+salir del entorno
+deactivate
+Instalar Django:
+pip install django
+Ejecutar el servidor:
+python manage.py runserver
+
+pip install -r requirements.txt 
